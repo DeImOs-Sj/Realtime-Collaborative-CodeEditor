@@ -3,10 +3,12 @@ import Editor from "@monaco-editor/react"
 import * as Y from "yjs"
 import { WebrtcProvider } from "y-webrtc"
 import { MonacoBinding } from "y-monaco"
+import Sidebar from './Sidebar'
 
 
 function App() {
     const editorRef = useRef(null);
+
 
 
     function handleEditorDidMount(editor, monaco) {
@@ -19,12 +21,15 @@ function App() {
     }
 
     return (
-        <Editor
-            height="100vh"
-            width="100vw"
-            theme="vs-dark"
-            onMount={handleEditorDidMount}
-        />
+        <div className='flex'>
+            <Sidebar />
+            <Editor
+                height="100vh"
+                width="100vw"
+                theme="vs-dark"
+                onMount={handleEditorDidMount}
+            />
+        </div>
     )
 }
 
