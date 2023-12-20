@@ -1,7 +1,8 @@
-import { React, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-const login = () => {
+
+const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
@@ -10,26 +11,23 @@ const login = () => {
         e.preventDefault();
 
         try {
-            // Make a POST request to your login endpoint
             const response = await axios.post('http://localhost:3000/login', {
                 email,
                 password,
             });
 
-            // Assuming your backend returns a token upon successful login
-            const token = response.data.token;
-
-            // Store the token in your application (e.g., in local storage, Redux state, etc.)
-            // You might want to implement better token management and security practices
-            localStorage.setItem('token', token);
-
-            // Redirect to the /editor route upon successful login
-            navigate('/editor');
+            if (response.status === 200) {
+                const { token } = response.data;
+                localStorage.setItem('token', token);
+                navigate('/createRoom');
+            } else {
+                console.error('Login failed:', response.statusText);
+            }
         } catch (error) {
-            // Handle login error (e.g., display an error message)
             console.error('Login failed:', error.message);
         }
     };
+
     return (
         <div>
             <div className="min-h-screen flex items-stretch text-white ">
@@ -115,4 +113,4 @@ const login = () => {
     )
 }
 
-export default login
+export default Login

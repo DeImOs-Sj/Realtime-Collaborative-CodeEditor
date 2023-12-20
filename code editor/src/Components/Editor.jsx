@@ -1,36 +1,66 @@
-import { useState, useRef } from 'react'
-import Editor from "@monaco-editor/react"
-import * as Y from "yjs"
-import { WebrtcProvider } from "y-webrtc"
-import { MonacoBinding } from "y-monaco"
-import Sidebar from './Sidebar'
+import React, { useEffect, useRef } from 'react';
+import Codemirror from 'codemirror';
 
 
-function App() {
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/dracula.css';
+
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/addon/edit/closetag'
+
+import 'codemirror/addon/edit/closebrackets';
+import ACTIONS from './Actions';
+
+const Editor = ({ socketRef, roomId, onCodeChange }) => {
     const editorRef = useRef(null);
+    useEffect(() => {
+        async function init() {
+            editorRef.current = Codemirror.fromTextArea(
+                document.getElementById('realtimeEditor'),
+                {
+                    mode: { name: 'javascript', json: true },
+                    theme: 'dracula',
+                    autoCloseTags: true,
+                    autoCloseBrackets: true,
+                    lineNumbers: true,
+                }
+            );
+
+            editorRef.current.on('change', (instance, changes) => {
+                const { origin } = changes;
+                const code = instance.getValue();
+                onCodeChange(code);
+                if (origin !== 'setValue') {
+                    socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+                        roomId,
+                        code,
+                    });
+                }
+            });
+        }
+        init();
+    }, []);
+
+    useEffect(() => {
+        const socket = socketRef.current;
+
+        if (socket) {
+            socket.on(ACTIONS.CODE_CHANGE, ({ code }) => {
+                if (code !== null) {
+                    editorRef.current.setValue(code);
+                }
+            });
+        }
+
+        return () => {
+            if (socket) {
+                socket.off(ACTIONS.CODE_CHANGE);
+            }
+        };
+    }, [socketRef.current]);
 
 
+    return <textarea id="realtimeEditor"></textarea>;
+};
 
-    function handleEditorDidMount(editor, monaco) {
-        editorRef.current = editor;
-        const doc = new Y.Doc();
-        const provider = new WebrtcProvider("test-room", doc);
-        const type = doc.getText("monaco");
-        const binding = new MonacoBinding(type, editorRef.current.getModel(), new Set([editorRef.current]), provider.awareness);
-        console.log(provider.awareness);
-    }
-
-    return (
-        <div className='flex'>
-            <Sidebar />
-            <Editor
-                height="100vh"
-                width="100vw"
-                theme="vs-dark"
-                onMount={handleEditorDidMount}
-            />
-        </div>
-    )
-}
-
-export default App
+export default Editor;
