@@ -1,4 +1,3 @@
-// Actions.js
 const ACTIONS = {
     JOIN: 'join',
     JOINED: 'joined',

@@ -1,4 +1,4 @@
-// Actions.js
+// Actions.cjs
 const ACTIONS = {
     JOIN: 'join',
     JOINED: 'joined',

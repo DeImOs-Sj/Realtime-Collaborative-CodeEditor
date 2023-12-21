@@ -1,5 +1,7 @@
 import { React, useState } from 'react'
 import axios from 'axios';
+import toast from 'react-hot-toast';
+
 import { useNavigate } from 'react-router-dom';
 
 
@@ -24,6 +26,8 @@ const Signup = () => {
             });
             if (response.data) {
                 console.log(response.data);
+                toast.success('Sucessfull SignUp');
+
                 // Assuming you have a success scenario where you want to redirect to the login page
                 navigate('/login');
             } else {
@@ -31,6 +35,8 @@ const Signup = () => {
             }
         } catch (error) {
             // Display an error message
+            toast.success('Invalid Data');
+
             console.error(error.response.data);
         }
     };

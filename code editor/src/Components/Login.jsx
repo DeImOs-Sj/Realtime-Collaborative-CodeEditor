@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -17,13 +18,18 @@ const Login = () => {
             });
 
             if (response.status === 200) {
+                toast.success('Successfully login ');
+
                 const { token } = response.data;
                 localStorage.setItem('token', token);
                 navigate('/createRoom');
             } else {
+
                 console.error('Login failed:', response.statusText);
             }
         } catch (error) {
+            toast.error('Invalid password or mail id');
+
             console.error('Login failed:', error.message);
         }
     };

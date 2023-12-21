@@ -7,14 +7,13 @@ import Login from './Components/Login';
 import EditorPage from './Components/EditorPage';
 import Signup from './Components/Signup';
 import CreateRoom from './Components/CreateRoom';
-import Toaster from "react-hot-toast"
+import { Toaster } from 'react-hot-toast';
 import Sidebar from './Components/EditorPage';
-// import ACTIONS from './Components/Actions.js';
 
 function App() {
   return (
     <>
-      {/* <Toaster
+      <Toaster
         position="top-right"
         toastOptions={{
           success: {
@@ -23,7 +22,7 @@ function App() {
             },
           },
         }}
-      /> */}
+      />
 
       <Router>
         <Routes>

@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef, React } from 'react'
-import { useNavigate, useLocation, useParams } from 'react-router-dom'
-import Client from './Client'
-import ACTIONS from './Actions.js';
-
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import ACTIONS from '../Shared/Actions.js';
 import { initSocket } from './socket';
 import Editor from './Editor';
-
+import Client from './Client';
 
 const EditorPage = () => {
     const socketRef = useRef(null);
@@ -14,6 +13,27 @@ const EditorPage = () => {
     const { roomId } = useParams();
     const reactNavigator = useNavigate();
     const [clients, setClients] = useState([]);
+
+    const handleSyncCode = ({ clients, username, socketId }) => {
+        if (username !== location.state?.username) {
+            toast.success(`${username} synced code.`);
+            console.log(`${username} synced code`);
+        }
+        setClients(clients);
+    };
+
+    const handleJoinRoom = ({ clients, username, socketId }) => {
+        if (username !== location.state?.username) {
+            toast.success(`${username} joined the room.`);
+            console.log(`${username} joined`);
+        }
+        setClients(clients);
+
+        socketRef.current.emit(ACTIONS.SYNC_CODE, {
+            code: codeRef.current,
+            socketId,
+        });
+    };
 
     useEffect(() => {
         const init = async () => {
@@ -26,65 +46,39 @@ const EditorPage = () => {
                 toast.error('Socket connection failed, try again later.');
                 reactNavigator('/');
             }
-            // socketRef.current.off(ACTIONS.JOINED);
 
             socketRef.current.emit(ACTIONS.JOIN, {
                 roomId,
                 username: location.state?.username,
             });
-            socketRef.current.on(ACTIONS.SYNC_CODE, ({ clients, username, socketId }) => {
-                if (username !== location.state?.username) {
-                    toast.success(`${username} synced code.`);
-                    console.log(`${username} synced code`);
 
-                }
-                setClients(clients);
-            });
+            socketRef.current.on(ACTIONS.SYNC_CODE, handleSyncCode);
+            socketRef.current.on(ACTIONS.JOINED, handleJoinRoom);
 
-
-            // Listening for joined event
-            socketRef.current.on(
-                ACTIONS.JOINED,
-                ({ clients, username, socketId }) => {
-                    if (username !== location.state?.username) {
-                        toast.success(`${username} joined the room.`);
-                        console.log(`${username} joined`);
-
-                    }
-                    setClients(clients);
-
-
-                    socketRef.current.emit(ACTIONS.SYNC_CODE, {
-                        code: codeRef.current,
-                        socketId,
-                    });
-                }
-
-            );
-
-            // Listening for disconnected
             socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
                 toast.success(`${username} left the room.`);
-                setClients((prev) => {
-                    return prev.filter((client) => client.socketId !== socketId);
-                });
+                setClients((prev) =>
+                    prev.filter((client) => client.socketId !== socketId)
+                );
 
-                // Ensure the socket is still connected before trying to disconnect
                 if (socketRef.current && socketRef.current.connected) {
                     socketRef.current.disconnect();
                 }
-            }
-            );
+            });
         };
+
         init();
+
         return () => {
             if (socketRef.current) {
                 socketRef.current.disconnect();
-                socketRef.current.off(ACTIONS.JOINED);
+                socketRef.current.off(ACTIONS.SYNC_CODE, handleSyncCode);
+                socketRef.current.off(ACTIONS.JOINED, handleJoinRoom);
                 socketRef.current.off(ACTIONS.DISCONNECTED);
             }
         };
     }, [reactNavigator, roomId, location.state?.username]);
+
     async function copyRoomId() {
         try {
             await navigator.clipboard.writeText(roomId);
@@ -94,10 +88,10 @@ const EditorPage = () => {
             console.error(err);
         }
     }
+
     function leaveRoom() {
         reactNavigator('/signup');
     }
-
 
     return (
         <div className="flex">
@@ -174,7 +168,7 @@ const EditorPage = () => {
 
                     </nav>
                     <button className="relative group overflow-hidden px-8 mb-10 h-12  flex space-x-2 items-center bg-gradient-to-r from-[#2b6cef] to-purple-500 hover:to-purple-600">
-                        <span className="relative text-sm w-[4rem] text-white" onClick={copyRoomId}>Copy ROOM ID
+                        <span className="relative text-sm w-[4rem] text-white" onClick={copyRoomId}>Copy RoomId
                         </span>
 
                     </button>

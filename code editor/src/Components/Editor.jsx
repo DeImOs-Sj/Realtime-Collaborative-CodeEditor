@@ -9,7 +9,7 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/edit/closetag'
 
 import 'codemirror/addon/edit/closebrackets';
-import ACTIONS from './Actions';
+import ACTIONS from '../Shared/Actions';
 
 const Editor = ({ socketRef, roomId, onCodeChange }) => {
     const editorRef = useRef(null);
